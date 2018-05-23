@@ -1,36 +1,36 @@
 package com.mywebapp.dao;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
+import com.mywebapp.model.Member;
+import org.hibernate.*;
+import org.hibernate.cfg.Configuration;
+
+import java.util.Date;
+
 
 public class RegistrationDao {
 
-    public void registerUser(HttpServletRequest request, HttpServletResponse response) throws IOException, ClassNotFoundException, SQLException {
+    public void registerUser(String firstName, String lastName, String email, String userName, String password) {
+        try {
 
-        String user = request.getParameter("uname");
-        String pwd = request.getParameter("pass");
-        String fname = request.getParameter("fname");
-        String lname = request.getParameter("lname");
-        String email = request.getParameter("email");
-        String sql = ("insert into members(first_name, last_name, email, uname, pass, regdate) values ('" + fname + "','" + lname + "','" + email + "','" + user + "','" + pwd + "', current_date)");
+            SessionFactory sessionFactory = new Configuration().configure().buildSessionFactory();
+            Session session = sessionFactory.openSession();
+            Transaction transaction = session.beginTransaction();
 
+            Member member = new Member();
 
-        Class.forName("org.postgresql.Driver");
-        Connection con = DriverManager.getConnection("jdbc:postgresql://localhost:5432/MyWebApp",
-                "postgres", "postgres");
-        Statement st = con.createStatement();
-        //ResultSet rs;
-        int i = st.executeUpdate(sql);
-        if (i > 0) {
-            response.sendRedirect("WelcomePage.jsp");
-        } else {
-            response.sendRedirect("index.jsp");
+            member.setFirstName(firstName);
+            member.setLastName(lastName);
+            member.setEmail(email);
+            member.setUserName(userName);
+            member.setUserPassword(password);
+            member.setRegistrationDate(new Date());
+            session.save(member);
+            transaction.commit();
+
+        } catch (HibernateException e) {
+            System.out.println(e.getMessage());
+            System.out.println("error");
         }
-    }
 
+    }
 }
